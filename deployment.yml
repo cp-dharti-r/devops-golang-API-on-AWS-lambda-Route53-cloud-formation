@@ -109,5 +109,5 @@ Resources:
       Name: !Ref CustomDomainName
       Type: A
       AliasTarget:
-        DNSName: !GetAtt CustomDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt CustomDomainName.HostedZoneId
+        DNSName: !GetAtt CustomDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CustomDomain.HostedZoneId
