@@ -26,7 +26,6 @@ Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: LambdaExecutionRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -37,7 +36,7 @@ Resources:
             Action:
               - sts:AssumeRole
       Policies:
-        - PolicyName: LambdaPolicy
+        - PolicyName: LambdaBasicExecutionPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -47,7 +46,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                   - lambda:InvokeFunction
-                Resource: "*"
+                Resource: arn:aws:logs:*:*:*
 
   DevopsGolangLambdaFunction:
     Type: AWS::Lambda::Function

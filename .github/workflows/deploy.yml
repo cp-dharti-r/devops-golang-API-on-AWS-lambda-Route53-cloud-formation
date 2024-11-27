@@ -40,7 +40,7 @@ jobs:
         run: |
           aws cloudformation deploy \
             --template-file deployment.yml \
-            --stack-name golang-api-stack \
+            --stack-name dharti-golang-api-deployment-stack \
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
               S3BucketName=${{ secrets.S3_BUCKET_NAME }} \
