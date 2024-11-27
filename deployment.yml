@@ -10,7 +10,7 @@ Parameters:
     Default: DevopsGolangLambda
     Description: The name of the Lambda function
 
-  CustomDomain:
+  CustomDomainName:
     Type: String
     Description: The custom domain name for the API (e.g., api.yourdomain.com)
 
@@ -88,7 +88,7 @@ Resources:
   CustomDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Ref CustomDomain
+      DomainName: !Ref CustomDomainName
       RegionalCertificateArn: !Ref CertificateArn
       EndpointConfiguration:
         Types:
@@ -97,7 +97,7 @@ Resources:
   ApiMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
-      DomainName: !Ref CustomDomain
+      DomainName: !Ref CustomDomainName
       RestApiId: !Ref ApiGateway
       Stage: prod
 
@@ -105,7 +105,7 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref HostedZoneId
-      Name: !Ref CustomDomain
+      Name: !Ref CustomDomainName
       Type: CNAME
       TTL: 300
       AliasTarget:

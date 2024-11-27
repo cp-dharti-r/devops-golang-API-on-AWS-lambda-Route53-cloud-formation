@@ -45,6 +45,6 @@ jobs:
             --parameter-overrides \
               S3BucketName=${{ secrets.S3_BUCKET_NAME }} \
               LambdaFunctionName=DevopsGolangLambda \
-              CustomDomain=${{ secrets.CUSTOM_DOMAIN }} \
+              CustomDomainName=${{ secrets.CUSTOM_DOMAIN }} \
               CertificateArn=${{ secrets.CERTIFICATE_ARN }} \
               HostedZoneId=${{ secrets.HOSTED_ZONE_ID }}
