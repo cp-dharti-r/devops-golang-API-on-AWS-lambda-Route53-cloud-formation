@@ -108,6 +108,6 @@ Resources:
       HostedZoneName: !Ref CustomDomainName
       Name: !Ref CustomDomainName
       Type: A
-    AliasTarget:
-      DNSName: !GetAtt CustomDomainName.RegionalDomainName
-      HostedZoneId: !GetAtt CustomDomainName.HostedZoneId
+      AliasTarget:
+        DNSName: !GetAtt CustomDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt CustomDomainName.HostedZoneId
