@@ -105,8 +105,9 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref HostedZoneId
+      HostedZoneName: !Ref CustomDomainName
       Name: !Ref CustomDomainName
-      Type: CNAME
-      TTL: 300
-      ResourceRecords:
-        - !GetAtt CustomDomain.RegionalDomainName
+      Type: A
+    AliasTarget:
+      DNSName: !GetAtt CustomDomainName.RegionalDomainName
+      HostedZoneId: !GetAtt CustomDomainName.HostedZoneId
