@@ -109,6 +109,5 @@ Resources:
       Name: !Ref CustomDomainName
       Type: CNAME
       TTL: 300
-      AliasTarget:
-        DNSName: !GetAtt CustomDomain.DistributionDomainName
-        HostedZoneId: !Ref HostedZoneId
+      ResourceRecords:
+        - !GetAtt CustomDomain.RegionalDomainName
