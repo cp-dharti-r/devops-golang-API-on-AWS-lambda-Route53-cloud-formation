@@ -98,8 +98,7 @@ Resources:
     Properties:
       DomainName: !Ref CustomDomainName
       RestApiId: !Ref ApiGateway
-      StageName: $default
-      AutoDeploy: true
+      Stage: $default
     DependsOn:
       - CustomDomain
 
