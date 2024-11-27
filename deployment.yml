@@ -98,7 +98,6 @@ Resources:
     Properties:
       DomainName: !Ref CustomDomainName
       RestApiId: !Ref ApiGateway
-      Stage: $default
     DependsOn:
       - CustomDomain
 
