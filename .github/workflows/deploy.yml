@@ -39,7 +39,7 @@ jobs:
       - name: Deploy CloudFormation stack
         run: |
           aws cloudformation deploy \
-            --template-file deployment.yaml \
+            --template-file deployment.yml \
             --stack-name golang-api-stack \
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
