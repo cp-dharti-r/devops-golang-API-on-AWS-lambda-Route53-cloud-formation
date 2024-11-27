@@ -99,6 +99,8 @@ Resources:
       DomainName: !Ref CustomDomainName
       RestApiId: !Ref ApiGateway
       Stage: prod
+    DependsOn:
+    - CustomDomainName
 
   Route53Record:
     Type: AWS::Route53::RecordSet
