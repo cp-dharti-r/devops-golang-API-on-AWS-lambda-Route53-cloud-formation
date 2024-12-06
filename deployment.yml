@@ -101,15 +101,15 @@ Resources:
     DependsOn:
       - CustomDomain
 
-  Route53Record:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref HostedZoneId
-      HostedZoneName: !Ref CustomDomainName
-      Name: !Ref CustomDomainName
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt CustomDomain.RegionalDomainName
-        HostedZoneId: !Ref HostedZoneId
-    DependsOn:
-      - ApiMapping
+  # Route53Record:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     HostedZoneId: !Ref HostedZoneId
+  #     HostedZoneName: !Ref CustomDomainName
+  #     Name: !Ref CustomDomainName
+  #     Type: A
+  #     AliasTarget:
+  #       DNSName: !GetAtt CustomDomain.RegionalDomainName
+  #       HostedZoneId: !GetAtt CustomDomain.HostedZoneId
+  #   DependsOn:
+  #     - ApiMapping
