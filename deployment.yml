@@ -111,3 +111,5 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt CustomDomain.RegionalDomainName
         HostedZoneId: !GetAtt CustomDomain.HostedZoneId
+    DependsOn:
+      - ApiMapping
