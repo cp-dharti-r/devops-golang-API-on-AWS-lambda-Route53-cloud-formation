@@ -57,7 +57,7 @@ Resources:
       Code:
         S3Bucket: !Ref S3BucketName
         S3Key: deployment.zip
-      Runtime: go1.x
+      Runtime: go2.x
       Timeout: 15
 
   ApiGateway:
