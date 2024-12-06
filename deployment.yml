@@ -110,6 +110,6 @@ Resources:
       Type: A
       AliasTarget:
         DNSName: !GetAtt CustomDomain.RegionalDomainName
-        HostedZoneId: !GetAtt CustomDomain.HostedZoneId
+        HostedZoneId: !Ref HostedZoneId
     DependsOn:
       - ApiMapping
