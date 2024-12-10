@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
   S3BucketName:
@@ -31,12 +31,10 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
       Policies:
-        - PolicyName: LambdaBasicExecutionPolicy
+        - PolicyName: LambdaExecutionPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -45,10 +43,9 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                  - lambda:InvokeFunction
-                Resource: "*"
+                Resource: "arn:aws:logs:*:*:*"
 
-  DevopsGolangLambdaFunction:
+  DevopsGoLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref LambdaFunctionName
@@ -56,77 +53,36 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Ref S3BucketName
-        S3Key: deployment.zip
+        S3Key: lambda/go-lambda.zip
       Runtime: "provided.al2023"
-      Timeout: 15
+      Timeout: 10
 
-  LambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref DevopsGolangLambdaFunction
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
-
-  ApiGateway:
+  ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: DevopsGolangApi
+      Name: !Sub "${LambdaFunctionName}-API"
 
   ApiGatewayResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !Ref ApiGateway
-      ParentId: !GetAtt ApiGateway.RootResourceId
-      PathPart: hello
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: lambda
+      RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !Ref ApiGateway
-      ResourceId: !Ref ApiGatewayResource
       HttpMethod: GET
+      ResourceId: !Ref ApiGatewayResource
+      RestApiId: !Ref ApiGatewayRestApi
       AuthorizationType: NONE
       Integration:
-        Type: AWS_PROXY
         IntegrationHttpMethod: POST
+        Type: AWS_PROXY
         Uri: !Sub
-          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations"
-          - { LambdaArn: !GetAtt DevopsGolangLambdaFunction.Arn }
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          - LambdaArn: !GetAtt GoLambdaFunction.Arn
 
-  ApiGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    Properties:
-      RestApiId: !Ref ApiGateway
-      StageName: prod
-    DependsOn:
-      - ApiGatewayMethod
-
-  CustomDomain:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName: !Ref CustomDomainName
-      RegionalCertificateArn: !Ref CertificateArn
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-
-  ApiMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    Properties:
-      DomainName: !Ref CustomDomainName
-      RestApiId: !Ref ApiGateway
-    DependsOn:
-      - CustomDomain
-
-  Route53Record:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref HostedZoneId
-      Name: !Ref CustomDomainName
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt CustomDomain.RegionalDomainName
-        HostedZoneId: Z2FDTNDATAQYW2
-    DependsOn:
-      - ApiMapping
+Outputs:
+  ApiUrl:
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/lambda"
