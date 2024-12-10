@@ -60,14 +60,6 @@ Resources:
       Runtime: "provided.al2023"
       Timeout: 10
 
-  ApiGatewayPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt DevopsGoLambdaFunction.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*"
-
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -78,6 +70,13 @@ Resources:
       BinaryMediaTypes: ["*/*"]
       DisableExecuteApiEndpoint: false
       MinimumCompressionSize: 100
+
+  ApiGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: lambda
+      RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethod:
     Type: AWS::ApiGateway::Method
@@ -93,12 +92,13 @@ Resources:
           - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
           - LambdaArn: !GetAtt DevopsGoLambdaFunction.Arn
 
-  ApiGatewayResource:
-    Type: AWS::ApiGateway::Resource
+  ApiGatewayPermission:
+    Type: AWS::Lambda::Permission
     Properties:
-      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: lambda
-      RestApiId: !Ref ApiGatewayRestApi
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt DevopsGoLambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*"
 
 Outputs:
   ApiUrl:
