@@ -127,6 +127,6 @@ Resources:
       Type: A
       AliasTarget:
         DNSName: !GetAtt CustomDomain.RegionalDomainName
-        HostedZoneId: !GetAtt CustomDomain.HostedZoneId
+        HostedZoneId: Z2FDTNDATAQYW2
     DependsOn:
       - ApiMapping
