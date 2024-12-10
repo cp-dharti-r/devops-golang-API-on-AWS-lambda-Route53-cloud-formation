@@ -105,7 +105,6 @@ Resources:
   CustomDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      HostedZoneId: !Ref HostedZoneId
       DomainName: !Ref CustomDomainName
       RegionalCertificateArn: !Ref CertificateArn
       EndpointConfiguration:
