@@ -23,6 +23,7 @@ Parameters:
     Description: Route53 Hosted Zone ID
 
 Resources:
+  # Lambda Execution Role
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -46,63 +47,62 @@ Resources:
                 Resource: "arn:aws:logs:*:*:*"
               - Effect: Allow
                 Action: lambda:InvokeFunction
-                Resource: !GetAtt DevopsGoLambdaFunction.Arn
+                Resource: !GetAtt GoLambdaFunction.Arn
 
-  DevopsGoLambdaFunction:
+  # Lambda Function
+  GoLambdaFunction:
     Type: AWS::Lambda::Function
+    DependsOn: LambdaExecutionRole
     Properties:
       FunctionName: !Ref LambdaFunctionName
       Handler: main
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Ref S3BucketName
-        S3Key: lambda/go-lambda.zip
+        S3Key: "lambda/go-lambda.zip"
       Runtime: "provided.al2023"
-      Timeout: 10
+      Timeout: 15
 
+  # API Gateway Rest API
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: !Sub "${LambdaFunctionName}-API"
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      BinaryMediaTypes: ["*/*"]
-      DisableExecuteApiEndpoint: false
-      MinimumCompressionSize: 100
+      Name: "GoLambdaAPI"
+      Description: "API for Go Lambda function"
 
+  # API Gateway Resource
   ApiGatewayResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: lambda
       RestApiId: !Ref ApiGatewayRestApi
-    DependsOn:
-      - ApiGatewayRestApi
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: "lambda"
 
+  # API Gateway Method
   ApiGatewayMethod:
     Type: AWS::ApiGateway::Method
+    DependsOn: GoLambdaFunction
     Properties:
+      AuthorizationType: NONE
       HttpMethod: GET
       ResourceId: !Ref ApiGatewayResource
       RestApiId: !Ref ApiGatewayRestApi
-      AuthorizationType: NONE
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
-        Uri: !Sub
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-          - LambdaArn: !GetAtt DevopsGoLambdaFunction.Arn
-    DependsOn:
-      - ApiGatewayResource
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GoLambdaFunction.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
 
+  # Lambda Permission for API Gateway
   ApiGatewayPermission:
     Type: AWS::Lambda::Permission
+    DependsOn: ApiGatewayMethod
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt DevopsGoLambdaFunction.Arn
+      FunctionName: !Ref GoLambdaFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*"
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*
 
 Outputs:
   ApiUrl:
