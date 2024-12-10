@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"user"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -38,10 +39,10 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
-	router.POST("/api/users", Create)
-	router.GET("/api/users/:id", Get)
-	router.PUT("/api/users/:id", Update)
-	router.DELETE("/api/users/:id", Delete)
+	router.POST("/api/users", user.Create)
+	router.GET("/api/users/:id", user.Get)
+	router.PUT("/api/users/:id", user.Update)
+	router.DELETE("/api/users/:id", user.Delete)
 
 	router.Run(":8000")
 
