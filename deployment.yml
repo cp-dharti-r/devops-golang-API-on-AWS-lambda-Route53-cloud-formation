@@ -77,6 +77,8 @@ Resources:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
       PathPart: lambda
       RestApiId: !Ref ApiGatewayRestApi
+    DependsOn:
+      - ApiGatewayRestApi
 
   ApiGatewayMethod:
     Type: AWS::ApiGateway::Method
@@ -91,6 +93,8 @@ Resources:
         Uri: !Sub
           - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
           - LambdaArn: !GetAtt DevopsGoLambdaFunction.Arn
+    DependsOn:
+      - ApiGatewayResource
 
   ApiGatewayPermission:
     Type: AWS::Lambda::Permission
