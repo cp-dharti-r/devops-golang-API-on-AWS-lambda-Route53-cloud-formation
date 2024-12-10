@@ -99,8 +99,6 @@ Resources:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
       PathPart: lambda
       RestApiId: !Ref ApiGatewayRestApi
-    DependsOn:
-      - ApiGatewayMethod
 
 Outputs:
   ApiUrl:
