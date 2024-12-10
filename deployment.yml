@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
 Parameters:
   S3BucketName:
@@ -44,6 +44,9 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: "arn:aws:logs:*:*:*"
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt DevopsGoLambdaFunction.Arn
 
   DevopsGoLambdaFunction:
     Type: AWS::Lambda::Function
@@ -57,23 +60,30 @@ Resources:
       Runtime: "provided.al2023"
       Timeout: 10
 
+  ApiGatewayPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt DevopsGoLambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*"
+
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: !Sub "${LambdaFunctionName}-API"
-
-  ApiGatewayResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: lambda
-      RestApiId: !Ref ApiGatewayRestApi
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      BinaryMediaTypes: ["*/*"]
+      DisableExecuteApiEndpoint: false
+      MinimumCompressionSize: 100
 
   ApiGatewayMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: GET
-      ResourceId: !Ref ApiGatewayResource
+      ResourceId: !GetAtt ApiGatewayRestApi.RootResourceId
       RestApiId: !Ref ApiGatewayRestApi
       AuthorizationType: NONE
       Integration:
@@ -82,6 +92,15 @@ Resources:
         Uri: !Sub
           - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
           - LambdaArn: !GetAtt DevopsGoLambdaFunction.Arn
+
+  ApiGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: lambda
+      RestApiId: !Ref ApiGatewayRestApi
+    DependsOn:
+      - ApiGatewayMethod
 
 Outputs:
   ApiUrl:
