@@ -96,7 +96,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt GoLambdaFunction.Arn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*
 
 Outputs:
   ApiUrl:
