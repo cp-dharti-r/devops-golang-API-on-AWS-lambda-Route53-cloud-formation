@@ -59,6 +59,12 @@ Resources:
       Runtime: "provided.al2023"
       Timeout: 15
 
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionName}" 
+      RetentionInDays: 30
+
   # API Gateway Rest API
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
