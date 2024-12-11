@@ -45,14 +45,10 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: "arn:aws:logs:*:*:*"
-              - Effect: Allow
-                Action: lambda:InvokeFunction
-                Resource: !GetAtt GoLambdaFunction.Arn
 
   # Lambda Function
   GoLambdaFunction:
     Type: AWS::Lambda::Function
-    DependsOn: LambdaExecutionRole
     Properties:
       FunctionName: !Ref LambdaFunctionName
       Handler: main
@@ -81,7 +77,6 @@ Resources:
   # API Gateway Method
   ApiGatewayMethod:
     Type: AWS::ApiGateway::Method
-    DependsOn: GoLambdaFunction
     Properties:
       AuthorizationType: NONE
       HttpMethod: GET
@@ -97,10 +92,9 @@ Resources:
   # Lambda Permission for API Gateway
   ApiGatewayPermission:
     Type: AWS::Lambda::Permission
-    DependsOn: ApiGatewayMethod
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref GoLambdaFunction
+      FunctionName: !GetAtt GoLambdaFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*
 
