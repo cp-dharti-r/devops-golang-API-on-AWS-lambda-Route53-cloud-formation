@@ -24,7 +24,6 @@ jobs:
       - name: Build binary
         run: |
           GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
-          chmod +x bootstrap
           zip deployment.zip bootstrap
 
       - name: Configure AWS credentials
@@ -35,7 +34,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Upload to S3
-        run: aws s3 cp deployment.zip s3://${{ secrets.S3_BUCKET_NAME }}/lambda/go-lambda.zip
+        run: aws s3 cp deployment.zip s3://${{ secrets.S3_BUCKET_NAME }}
 
       - name: Deploy CloudFormation stack
         run: |

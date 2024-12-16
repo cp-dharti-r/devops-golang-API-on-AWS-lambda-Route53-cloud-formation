@@ -73,7 +73,7 @@ Resources:
       Runtime: "provided.al2023"
       Code:
         S3Bucket: !Ref "S3BucketName"
-        S3Key: "lambda/go-lambda.zip"
+        S3Key: "deployment.zip"
       Handler: main
       Timeout: 15
       Role: !GetAtt "LambdaExecutionRole.Arn"
