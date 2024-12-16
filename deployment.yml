@@ -30,7 +30,7 @@ Outputs:
         - LambdaExecutionRole
         - Arn
     Export:
-      Name: !Ref "LambdaRoleArnName"
+      Name: "DevOpsLambdaRoleArn"
   LambdaFunctionName:
     Value:
       Ref: LambdaFunction
