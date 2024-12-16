@@ -75,15 +75,8 @@ Resources:
         S3Bucket: !Ref "S3BucketName"
         S3Key: "lambda/go-lambda.zip"
       Handler: main
-      MemorySize: 256
       Timeout: 15
       Role: !GetAtt "LambdaExecutionRole.Arn"
-      VpcConfig:
-        SecurityGroupIds:
-          - sg-02ddab352dfa9f05b
-        SubnetIds:
-          - subnet-0e96e50eab80a254f
-          - subnet-0e3df6dacf201528d
 
   # LambdaVersion:
   #   Type: AWS::Lambda::Version
