@@ -16,9 +16,9 @@ var r *gin.Engine
 var ginLambda *ginadapter.GinLambda
 var db *sqlx.DB
 
-func init() {
-	db, _ = sqlx.Open("mysql", "root:password@/db-name")
-}
+// func init() {
+// 	db, _ = sqlx.Open("mysql", "root:password@/db-name")
+// }
 
 func init() {
 	r = setupRouter()
