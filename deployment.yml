@@ -75,7 +75,7 @@ Resources:
         S3Bucket: !Ref "S3BucketName"
         S3Key: "deployment.zip"
       Handler: main
-      Timeout: 15
+      Timeout: 20
       Role: !GetAtt "LambdaExecutionRole.Arn"
 
   ApiGateway:
