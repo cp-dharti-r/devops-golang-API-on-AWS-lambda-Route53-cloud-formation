@@ -22,88 +22,153 @@ Parameters:
     Type: String
     Description: Route53 Hosted Zone ID
 
+Outputs:
+  LambdaRoleARN:
+    Description: Role for Lambda execution.
+    Value:
+      Fn::GetAtt:
+        - LambdaExecutionRole
+        - Arn
+    Export:
+      Name: !Ref "LambdaRoleArnName"
+  LambdaFunctionName:
+    Value:
+      Ref: LambdaFunction
+  LambdaFunctionARN:
+    Description: Lambda function ARN.
+    Value:
+      Fn::GetAtt:
+        - LambdaFunction
+        - Arn
+    Export:
+      Name: !Ref "LambdaFunctionArnName"
+  ApiGatewayInvokeURL:
+    Value: !Sub https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStageName}
+  EnvType:
+    Value: !Ref EnvType
+
 Resources:
-  # Lambda Execution Role
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
-          - Effect: Allow
+          - Effect: "Allow"
             Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: LambdaExecutionPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: "arn:aws:logs:*:*:*"
+              Service:
+                - "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        - "arn:aws:iam::aws:policy/AWSLambdaExecute"
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        - "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonKinesisFullAccess"
+      Path: "/"
 
-  # Lambda Function
-  GoLambdaFunction:
+  LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Ref LambdaFunctionName
-      Handler: main
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Code:
-        S3Bucket: !Ref S3BucketName
-        S3Key: "lambda/go-lambda.zip"
+      Description: LambdaFunction for devops
       Runtime: "provided.al2023"
+      Code:
+        S3Bucket: !Ref "S3BucketName"
+        S3Key: "lambda/go-lambda.zip"
+      Handler: main
+      MemorySize: 256
       Timeout: 15
+      Role: !GetAtt "LambdaExecutionRole.Arn"
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-02ddab352dfa9f05b
+        SubnetIds:
+          - subnet-0e96e50eab80a254f
+          - subnet-0e3df6dacf201528d
 
-  LambdaLogGroup:
-    Type: AWS::Logs::LogGroup
+  LambdaVersion:
+    Type: AWS::Lambda::Version
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${LambdaFunctionName}" 
-      RetentionInDays: 30
+      FunctionName: !Ref LambdaFunctionName
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
 
-  # API Gateway Rest API
-  ApiGatewayRestApi:
+  ApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: "GoLambdaAPI"
-      Description: "API for Go Lambda function"
+      Description: Devops API Gateway
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      BinaryMediaTypes: ["*/*"]
+      DisableExecuteApiEndpoint: false
+      MinimumCompressionSize: 100
+      Name: "DevOpsAPI"
 
-  # API Gateway Resource
-  ApiGatewayResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      RestApiId: !Ref ApiGatewayRestApi
-      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: "lambda"
-
-  # API Gateway Method
-  ApiGatewayMethod:
+  ApiGatewayRootMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
-      HttpMethod: GET
-      ResourceId: !Ref ApiGatewayResource
-      RestApiId: !Ref ApiGatewayRestApi
+      HttpMethod: ANY
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
-        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GoLambdaFunction.Arn}/invocations
-      MethodResponses:
-        - StatusCode: 200
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
+          - lambdaArn: !GetAtt LambdaFunction.Arn
+      ResourceId: !GetAtt ApiGateway.RootResourceId
+      RestApiId: !Ref ApiGateway
 
-  # Lambda Permission for API Gateway
-  ApiGatewayPermission:
+  ApiGatewayRootResource:
+    Type: AWS::ApiGateway::Resource
+    DependsOn:
+      - ApiGatewayRootMethod
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: "{proxy+}"
+
+  ApiGatewayResourceProxyMethod:
+    Type: AWS::ApiGateway::Method
+    DependsOn:
+      - ApiGatewayRootResource
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: ANY
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
+          - lambdaArn: !GetAtt LambdaFunction.Arn
+      ResourceId: !Ref ApiGatewayRootResource
+      RestApiId: !Ref ApiGateway
+
+  LambdaApiGatewayInvoke:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt GoLambdaFunction.Arn
+      FunctionName: !GetAtt LambdaFunction.Arn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*/*
 
-Outputs:
-  ApiUrl:
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/lambda"
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ApiGatewayResourceProxyMethod
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: prod
+      StageDescription:
+        ThrottlingBurstLimit: 30
+        ThrottlingRateLimit: 30
+
+  # ApiGatewayCustomDomainMapping:
+  #   Type: AWS::ApiGateway::BasePathMapping
+  #   DependsOn:
+  #     - ApiGatewayDeployment
+  #   Properties:
+  #     DomainName: !Ref CustomDomainName
+  #     RestApiId: !Ref ApiGateway
+  #     Stage: !Ref ApiGatewayStageName
