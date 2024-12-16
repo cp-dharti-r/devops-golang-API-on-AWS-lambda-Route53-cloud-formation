@@ -23,8 +23,9 @@ jobs:
 
       - name: Build binary
         run: |
-          GOOS=linux GOARCH=amd64 go build -o main main.go
-          zip deployment.zip main
+          GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+          chmod +x bootstrap
+          zip deployment.zip bootstrap
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3

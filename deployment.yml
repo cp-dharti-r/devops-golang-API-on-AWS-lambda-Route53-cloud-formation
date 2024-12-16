@@ -78,13 +78,6 @@ Resources:
       Timeout: 15
       Role: !GetAtt "LambdaExecutionRole.Arn"
 
-  # LambdaVersion:
-  #   Type: AWS::Lambda::Version
-  #   Properties:
-  #     FunctionName: !Ref LambdaFunctionName
-  #     ProvisionedConcurrencyConfig:
-  #       ProvisionedConcurrentExecutions: 1
-
   ApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
