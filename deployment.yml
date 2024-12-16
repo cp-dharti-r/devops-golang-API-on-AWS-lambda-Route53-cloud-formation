@@ -41,11 +41,9 @@ Outputs:
         - LambdaFunction
         - Arn
     Export:
-      Name: !Ref "LambdaFunctionArnName"
+      Name: "DevOpsLambdaFunctionArn"
   ApiGatewayInvokeURL:
-    Value: !Sub https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStageName}
-  EnvType:
-    Value: !Ref EnvType
+    Value: !Sub https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod
 
 Resources:
   LambdaExecutionRole:
