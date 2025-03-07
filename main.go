@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"user"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -31,6 +30,7 @@ func LambdaHandler(ctx context.Context, req events.APIGatewayProxyRequest) (even
 }
 
 func setupRouter() *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	router.GET("/hello", func(c *gin.Context) {
@@ -39,14 +39,14 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
-	router.POST("/api/users", user.Create)
-	router.GET("/api/users/:id", user.Get)
-	router.PUT("/api/users/:id", user.Update)
-	router.DELETE("/api/users/:id", user.Delete)
+	// router.POST("/api/users", user.Create)
+	// router.GET("/api/users/:id", user.Get)
+	// router.PUT("/api/users/:id", user.Update)
+	// router.DELETE("/api/users/:id", user.Delete)
 
 	router.Run(":8000")
 
-	defer db.Close()
+	// defer db.Close()
 
 	return router
 }
