@@ -74,7 +74,7 @@ Resources:
       Code:
         S3Bucket: !Ref "S3BucketName"
         S3Key: "deployment.zip"
-      Handler: main
+      Handler: bootstrap
       Timeout: 50
       Role: !GetAtt "LambdaExecutionRole.Arn"
 
