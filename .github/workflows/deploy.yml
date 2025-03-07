@@ -38,7 +38,8 @@ jobs:
 
       - name: Deploy CloudFormation Stack
         run: |
+          aws cloudformation validate-template --template-body file://template.yml 
           aws cloudformation deploy \
-            --stack-name dharti-golang-api-deployment-stack \
             --template-file template.yaml \
+            --stack-name dharti-golang-api-deployment-stack \
             --capabilities CAPABILITY_NAMED_IAM
