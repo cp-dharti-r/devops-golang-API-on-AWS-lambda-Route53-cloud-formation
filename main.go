@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -15,9 +16,13 @@ var r *gin.Engine
 var ginLambda *ginadapter.GinLambda
 var db *sqlx.DB
 
-// func init() {
-// 	db, _ = sqlx.Open("mysql", "root:password@/db-name")
-// }
+func init() {
+    var err error
+    db, err = sqlx.Open("mysql", "root:password@tcp(your-db-endpoint)/db-name")
+    if err != nil {
+        log.Fatalf("Failed to connect to database: %v", err)
+    }
+}
 
 func init() {
 	r = setupRouter()
@@ -44,7 +49,7 @@ func setupRouter() *gin.Engine {
 	// router.PUT("/api/users/:id", user.Update)
 	// router.DELETE("/api/users/:id", user.Delete)
 
-	router.Run(":8000")
+	// router.Run(":8000")
 
 	// defer db.Close()
 
