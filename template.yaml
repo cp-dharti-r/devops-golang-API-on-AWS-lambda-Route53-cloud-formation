@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecution
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+
+  GolangLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: GolangLambdaFunction
+      Runtime: go1.x
+      Handler: bootstrap
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Sub "${AWS::AccountId}-golang-lambda-deployments"
+        S3Key: deployment.zip
+      MemorySize: 128
+      Timeout: 10
+
+  APIGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: GolangAPI
+      Description: API Gateway for Golang Lambda
+
+  RootMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref APIGateway
+      ResourceId: !GetAtt APIGateway.RootResourceId
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GolangLambda.Arn}/invocations"
+
+  Deployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref APIGateway
+      StageName: prod
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GolangLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+
+  APIDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: api.example.com
+      RegionalCertificateArn: "arn:aws:acm:region:account-id:certificate/certificate-id"
+
+  Route53Record:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: "example.com."
+      Name: "api.example.com"
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt APIDomain.RegionalDomainName
+        HostedZoneId: !GetAtt APIDomain.RegionalHostedZoneId
