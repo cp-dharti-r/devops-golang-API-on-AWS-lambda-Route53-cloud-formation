@@ -34,7 +34,7 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp deployment.zip s3://${{ secrets.S3_BUCKET }}/deployment.zip
+          aws s3 cp deployment.zip s3://${{ secrets.S3_BUCKET_NAME }}/deployment.zip
 
       - name: Deploy CloudFormation Stack
         run: |
