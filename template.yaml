@@ -26,7 +26,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: DhartiGolangLambdaFunction
-      Runtime: go1.x
+      Runtime: "provided.al2023"
       Handler: bootstrap
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
