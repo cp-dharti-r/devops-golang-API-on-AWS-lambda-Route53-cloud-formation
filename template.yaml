@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
+
 Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -40,11 +41,23 @@ Resources:
       Name: DhartiGolangAPI
       Description: API Gateway for Golang Lambda
 
+  APIGatewayAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !GetAtt LambdaExecutionRole.Arn
+
+  APIGatewayRootResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref APIGateway
+      ParentId: !GetAtt APIGateway.RootResourceId
+      PathPart: "golang"
+
   RootMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref APIGateway
-      ResourceId: !GetAtt APIGateway.RootResourceId
+      ResourceId: !Ref APIGatewayRootResource
       HttpMethod: GET
       AuthorizationType: NONE
       Integration:
@@ -54,6 +67,7 @@ Resources:
 
   Deployment:
     Type: AWS::ApiGateway::Deployment
+    DependsOn: RootMethod
     Properties:
       RestApiId: !Ref APIGateway
       StageName: prod
@@ -64,6 +78,7 @@ Resources:
       FunctionName: !Ref GolangLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${APIGateway}/*/*"
 
   # APIDomain:
   #   Type: AWS::ApiGateway::DomainName
