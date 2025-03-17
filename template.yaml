@@ -1,5 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
+Parameters:
+  S3BucketName:
+    Type: String
+    Description: The name of the S3 bucket where the Lambda deployment is stored
+
 Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -30,7 +35,7 @@ Resources:
       Handler: bootstrap
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
-        S3Bucket: !Sub "${AWS::AccountId}-golang-lambda-deployments"
+        S3Bucket: !Ref "S3BucketName"
         S3Key: deployment.zip
       MemorySize: 128
       Timeout: 10

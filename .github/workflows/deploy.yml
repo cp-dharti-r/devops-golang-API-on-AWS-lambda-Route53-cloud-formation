@@ -42,4 +42,6 @@ jobs:
           aws cloudformation deploy \
             --template-file template.yaml \
             --stack-name dharti-golang-api-deployment-stack \
-            --capabilities CAPABILITY_NAMED_IAM
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides \
+              S3BucketName=${{ secrets.S3_BUCKET_NAME }}
