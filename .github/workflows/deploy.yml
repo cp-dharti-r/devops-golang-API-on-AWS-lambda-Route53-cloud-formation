@@ -45,6 +45,6 @@ jobs:
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
               S3BucketName=${{ secrets.S3_BUCKET_NAME }} \
-              HostedZoneName=${{ secrets.HOSTED_ZONE_NAME }} \
+              HostedZoneId=${{ secrets.HOSTED_ZONE_ID }} \
               CustomDomainName=${{ secrets.CUSTOM_DOMAIN }} \
               CertificateArn=${{ secrets.CERTIFICATE_ARN }}
