@@ -65,18 +65,18 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
 
-  APIDomain:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName: api.bitespace.in
-      RegionalCertificateArn: "arn:aws:acm:region:account-id:certificate/certificate-id"
+  # APIDomain:
+  #   Type: AWS::ApiGateway::DomainName
+  #   Properties:
+  #     DomainName: api.bitespace.in
+  #     RegionalCertificateArn: "arn:aws:acm:region:account-id:certificate/certificate-id"
 
-  Route53Record:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneName: "bitespace.in"
-      Name: "api.bitespace.in"
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt APIDomain.RegionalDomainName
-        HostedZoneId: !GetAtt APIDomain.RegionalHostedZoneId
+  # Route53Record:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     HostedZoneName: "bitespace.in"
+  #     Name: "api.bitespace.in"
+  #     Type: A
+  #     AliasTarget:
+  #       DNSName: !GetAtt APIDomain.RegionalDomainName
+  #       HostedZoneId: !GetAtt APIDomain.RegionalHostedZoneId
