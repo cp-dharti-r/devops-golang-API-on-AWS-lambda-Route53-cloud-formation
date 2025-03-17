@@ -41,10 +41,10 @@ Resources:
       Name: DhartiGolangAPI
       Description: API Gateway for Golang Lambda
 
-  APIGatewayAccount:
-    Type: AWS::ApiGateway::Account
-    Properties:
-      CloudWatchRoleArn: !GetAtt LambdaExecutionRole.Arn
+  # APIGatewayAccount:
+  #   Type: AWS::ApiGateway::Account
+  #   Properties:
+  #     CloudWatchRoleArn: !GetAtt LambdaExecutionRole.Arn
 
   APIGatewayRootResource:
     Type: AWS::ApiGateway::Resource
