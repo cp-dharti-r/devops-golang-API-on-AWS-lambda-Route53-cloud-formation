@@ -24,7 +24,7 @@ Resources:
   GolangLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: GolangLambdaFunction
+      FunctionName: DhartiGolangLambdaFunction
       Runtime: go1.x
       Handler: bootstrap
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -37,7 +37,7 @@ Resources:
   APIGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: GolangAPI
+      Name: DhartiGolangAPI
       Description: API Gateway for Golang Lambda
 
   RootMethod:
@@ -68,14 +68,14 @@ Resources:
   APIDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: api.example.com
+      DomainName: api.bitespace.in
       RegionalCertificateArn: "arn:aws:acm:region:account-id:certificate/certificate-id"
 
   Route53Record:
     Type: AWS::Route53::RecordSet
     Properties:
-      HostedZoneName: "example.com."
-      Name: "api.example.com"
+      HostedZoneName: "bitespace.in"
+      Name: "api.bitespace.in"
       Type: A
       AliasTarget:
         DNSName: !GetAtt APIDomain.RegionalDomainName
