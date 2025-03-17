@@ -44,4 +44,7 @@ jobs:
             --stack-name dharti-golang-api-deployment-stack \
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
-              S3BucketName=${{ secrets.S3_BUCKET_NAME }}
+              S3BucketName=${{ secrets.S3_BUCKET_NAME }} \
+              HostedZoneName=${{ secrets.HOSTED_ZONE_NAME }} \
+              CustomDomainName=${{ secrets.CUSTOM_DOMAIN }} \
+              CertificateArn=${{ secrets.CERTIFICATE_ARN }}

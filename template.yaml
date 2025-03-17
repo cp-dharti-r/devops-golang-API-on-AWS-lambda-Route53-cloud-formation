@@ -1,11 +1,24 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
 Parameters:
   S3BucketName:
     Type: String
     Description: The name of the S3 bucket where the Lambda deployment is stored
 
+  HostedZoneName:
+    Type: String
+    Description: Route 53 Hosted Zone Name
+
+  CustomDomainName:
+    Type: String
+    Description: The custom domain name for the API (e.g., api.yourdomain.com)
+
+  CertificateArn:
+    Type: String
+    Description: ARN of the SSL certificate for the custom domain
+
 Resources:
+  # IAM Role for Lambda Execution
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -25,8 +38,9 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: '*'
+                Resource: "*"
 
+  # Lambda Function
   GolangLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -40,16 +54,12 @@ Resources:
       MemorySize: 128
       Timeout: 10
 
+  # API Gateway
   APIGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: DhartiGolangAPI
       Description: API Gateway for Golang Lambda
-
-  # APIGatewayAccount:
-  #   Type: AWS::ApiGateway::Account
-  #   Properties:
-  #     CloudWatchRoleArn: !GetAtt LambdaExecutionRole.Arn
 
   APIGatewayRootResource:
     Type: AWS::ApiGateway::Resource
@@ -58,6 +68,7 @@ Resources:
       ParentId: !GetAtt APIGateway.RootResourceId
       PathPart: "golang"
 
+  # Root Method in API Gateway
   RootMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -70,6 +81,7 @@ Resources:
         IntegrationHttpMethod: POST
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GolangLambda.Arn}/invocations"
 
+  # API Gateway Deployment
   Deployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn: RootMethod
@@ -77,6 +89,7 @@ Resources:
       RestApiId: !Ref APIGateway
       StageName: prod
 
+  # Lambda Permission for API Gateway
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -85,18 +98,31 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${APIGateway}/*/*"
 
-  # APIDomain:
-  #   Type: AWS::ApiGateway::DomainName
-  #   Properties:
-  #     DomainName: api.bitespace.in
-  #     RegionalCertificateArn: "arn:aws:acm:region:account-id:certificate/certificate-id"
+  # Custom Domain for API Gateway
+  APIGatewayCustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref CustomDomainName
+      RegionalCertificateArn: !Ref CertificateArn
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
 
-  # Route53Record:
-  #   Type: AWS::Route53::RecordSet
-  #   Properties:
-  #     HostedZoneName: "bitespace.in"
-  #     Name: "api.bitespace.in"
-  #     Type: A
-  #     AliasTarget:
-  #       DNSName: !GetAtt APIDomain.RegionalDomainName
-  #       HostedZoneId: !GetAtt APIDomain.RegionalHostedZoneId
+  # API Mapping to Custom Domain
+  APIGatewayBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref APIGatewayCustomDomain
+      RestApiId: !Ref APIGateway
+      Stage: prod
+
+  # Route 53 DNS Record for API Gateway
+  Route53Record:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref HostedZoneName
+      Name: !Ref CustomDomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt APIGatewayCustomDomain.RegionalDomainName
+        HostedZoneId: !GetAtt APIGatewayCustomDomain.RegionalHostedZoneId
